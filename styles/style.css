@@ -1,8 +1,28 @@
-h1 {
+:root {
+    --bg:        #111111;   /* fundo principal */
+    --surface:   #1C1C1C;   /* navbar / sidebar */
+    --card:      #242424;   /* cards de filmes */
+    --primary:   #C0392B;   /* botões / destaque */
+    --hover:     #E74C3C;   /* hover / favoritos */
+    --text:      #F5F0E8;   /* títulos (creme) */
+    --muted:     #B0A89A;   /* sinopse / datas */
+    --star:      #F39C12;   /* estrelas / rating */
+    --border:    #2E2E2E;   /* separadores */
+    --badge:     #6C3483;   /* tags de género */
+}
+
+header {
     font-weight: bold;
     font-size: 70px;
 }
 
+nav {
+    font-size: 40px;
+    color: var(--text);
+    background-color: var(--surface);
+}
+
 body {
-    background-color: bisque;
+    background-color: var(--bg);
+    color: var(--text);
 }
