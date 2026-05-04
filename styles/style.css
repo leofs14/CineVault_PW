@@ -351,14 +351,14 @@ ul {
 }
 
 /* ── Chips de género ── */
-.chips {
+#genreContainer {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 24px;
 }
 
-.chip {
+.genre-btn {
   height: 32px;
   padding: 0 14px;
   border-radius: 20px;
@@ -369,45 +369,15 @@ ul {
   cursor: pointer;
 }
 
-.chip:hover {
+.genre-btn:hover {
   border-color: var(--primary);
   color: var(--text);
 }
 
-.chip.active {
+.genre-btn.active {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
-}
-
-/* ── TAB BAR ── */
-.tabbar {
-  display: flex;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  overflow-x: auto;
-}
-
-.tab {
-  height: 44px;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--text);
-}
-
-.tab.active {
-  color: var(--text);
-  border-bottom-color: var(--primary);
 }
 
 /* ── MAIN / CATÁLOGO ── */
