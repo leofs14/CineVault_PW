@@ -1,28 +1,630 @@
+/* ── Variáveis ── */
 :root {
-    --bg:        #111111;   /* fundo principal */
-    --surface:   #1C1C1C;   /* navbar / sidebar */
-    --card:      #242424;   /* cards de filmes */
-    --primary:   #C0392B;   /* botões / destaque */
-    --hover:     #E74C3C;   /* hover / favoritos */
-    --text:      #F5F0E8;   /* títulos (creme) */
-    --muted:     #B0A89A;   /* sinopse / datas */
-    --star:      #F39C12;   /* estrelas / rating */
-    --border:    #2E2E2E;   /* separadores */
-    --badge:     #6C3483;   /* tags de género */
+  --bg:      #111111;
+  --surface: #1C1C1C;
+  --card:    #242424;
+  --primary: #C0392B;
+  --hover:   #E74C3C;
+  --text:    #F5F0E8;
+  --muted:   #B0A89A;
+  --star:    #F39C12;
+  --border:  #2E2E2E;
+  --badge:   #6C3483;
 }
 
-header {
-    font-weight: bold;
-    font-size: 70px;
-}
-
-nav {
-    font-size: 40px;
-    color: var(--text);
-    background-color: var(--surface);
+/* ── Reset básico ── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background-color: var(--bg);
-    color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input {
+  font-family: 'DM Sans', sans-serif;
+}
+
+ul {
+  list-style: none;
+}
+
+/* ── NAVBAR ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 32px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--primary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-play {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 14px solid #fff;
+  margin-left: 3px;
+}
+
+.logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.logo-text span {
+  color: var(--primary);
+}
+
+/* Links de navegação */
+.nav-links {
+  display: flex;
+}
+
+.nav-link {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text);
+}
+
+.nav-link.active {
+  color: var(--text);
+  border-bottom-color: var(--primary);
+}
+
+/* Empurra o botão de favoritos para a direita */
+.nav-spacer {
+  flex: 1;
+}
+
+/* Botão favoritos */
+.nav-fav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.nav-fav-btn:hover {
+  border-color: var(--hover);
+  color: var(--hover);
+}
+
+.nav-fav-btn.has-favs {
+  color: var(--hover);
+  border-color: var(--hover);
+}
+
+.fav-badge {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 48px 24px 40px;
+}
+
+.hero-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 68px;
+  line-height: 0.95;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.hero-title em {
+  font-style: normal;
+  color: var(--primary);
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+/* ── Search ── */
+.search-wrap {
+  display: block;
+  position: relative;
+  max-width: 580px;
+}
+
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 50px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 50px 0 46px;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+}
+
+.search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-clear {
+  position: absolute;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear:hover {
+  color: var(--text);
+}
+
+.search-clear.visible {
+  display: flex;
+}
+
+/* ── Autocomplete ── */
+.autocomplete {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+  z-index: 200;
+}
+
+.autocomplete.open {
+  display: block;
+}
+
+.ac-header {
+  padding: 8px 14px 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.ac-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.ac-item:hover {
+  background: var(--card);
+}
+
+.ac-poster {
+  width: 30px;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ac-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ac-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.ac-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--star);
+  flex-shrink: 0;
+}
+
+.ac-divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.ac-external {
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Chips de género ── */
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.chip {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* ── TAB BAR ── */
+.tabbar {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  overflow-x: auto;
+}
+
+.tab {
+  height: 44px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--primary);
+}
+
+/* ── MAIN / CATÁLOGO ── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.section-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.section-action {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--primary);
+  font-family: 'DM Mono', monospace;
+}
+
+.section-action:hover {
+  color: var(--hover);
+}
+
+/* ── Grelha de filmes ── */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 14px;
+}
+
+/* ── Card de filme ── */
+.movie-card {
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.movie-card:hover {
+  border-color: #3e3e3e;
+}
+
+/* Poster */
+.card-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-poster-bg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-poster-icon {
+  opacity: 0.25;
+}
+
+.card-poster-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  color: rgba(245, 240, 232, 0.5);
+  text-align: center;
+  padding: 0 10px;
+  line-height: 1.3;
+}
+
+/* Badge de nota */
+.card-score-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 3px 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-star {
+  color: var(--star);
+  font-size: 10px;
+}
+
+.badge-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #fff;
+}
+
+/* Botão favorito */
+.card-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-fav-btn:hover {
+  background: var(--hover);
+  border-color: var(--hover);
+  color: #fff;
+}
+
+.card-fav-btn.active {
+  background: var(--hover);
+  border-color: var(--hover);
+  color: #fff;
+}
+
+/* Conteúdo do card */
+.card-body {
+  padding: 10px 12px 12px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-year {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.card-genre-tag {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 3px;
+  background: rgba(108, 52, 131, 0.25);
+  border: 1px solid rgba(108, 52, 131, 0.4);
+  color: #c39bd3;
+}
+
+/* Estado vazio */
+.empty-state {
+  text-align: center;
+  padding: 64px 16px;
+}
+
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 600px) {
+  .navbar     { padding: 0 16px; }
+  .nav-links  { display: none; }
+  .hero       { padding: 32px 16px 28px; }
+  .hero-title { font-size: 40px; }
+  .main       { padding: 24px 16px; }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+}
+
+@media (max-width: 400px) {
+  .movie-grid { grid-template-columns: repeat(2, 1fr); }
 }

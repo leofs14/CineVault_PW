@@ -1,15 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../scripts/script.js" defer></script>
-    <link rel="stylesheet" href="../styles/style.css">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/style.css">
 </head>
-<header>CineVault</header>
-<nav>Welcome!</nav>
 <body>
-    <h1></h1>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon"><div class="logo-play"></div></div>
+      <span class="logo-text">Cine<span>Vault</span></span>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-link active" data-nav="popular">Em destaque</li>
+      <li class="nav-link" data-nav="recent">Recentes</li>
+      <li class="nav-link" data-nav="top">Mais votados</li>
+      <li class="nav-link" data-nav="favs">Favoritos</li>
+    </ul>
+
+    <div class="nav-spacer"></div>
+
+    <button class="nav-fav-btn" id="navFavBtn">
+      <span>♥</span>
+      <span>Favoritos</span>
+      <span class="fav-badge" id="navFavBadge">0</span>
+    </button>
+  </nav>
+
+  <!-- ── Hero / Search ── -->
+  <header class="hero">
+    <div class="hero-inner">    
+      <h1 class="hero-title">Descobre<br><em>Cinema</em></h1>
+      <p class="hero-sub">Pesquisa, explora e guarda os teus filmes favoritos. Acede a sinopses, elenco, classificações e trailers.</p>
+
+      <search class="search-wrap">
+        <div class="search-field">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input class="search-input" id="searchInput" type="search" placeholder="Pesquisa filmes, atores…" autocomplete="off" spellcheck="false" aria-label="Pesquisar filmes"/>
+          <button class="search-clear" id="searchClear" aria-label="Limpar pesquisa">✕</button>
+        </div>
+        <div class="autocomplete" id="autocomplete" role="listbox" aria-label="Sugestões"></div>
+      </search>
+
+      <div class="chips" id="chips" role="group" aria-label="Filtrar por género">
+        <button class="chip active" data-filter="all">Todos</button>
+        <button class="chip" data-filter="action">Ação</button>
+        <button class="chip" data-filter="drama">Drama</button>
+        <button class="chip" data-filter="comedy">Comédia</button>
+        <button class="chip" data-filter="scifi">Ficção científica</button>
+        <button class="chip" data-filter="horror">Terror</button>
+        <button class="chip" data-filter="animation">Animação</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Catálogo ── -->
+  <main class="main">
+    <section class="catalog" aria-labelledby="sectionTitle">
+      <header class="section-header">
+        <h2 class="section-title" id="sectionTitle">Filmes populares</h2>
+        <span class="section-count" id="sectionCount"></span>
+        <button class="section-action">ver todos →</button>
+      </header>
+
+      <div class="movie-grid" id="movieGrid" role="list"></div>
+    </section>
+  </main>
+
+  <script src="../scripts/script.js"></script>
 </body>
 </html>
