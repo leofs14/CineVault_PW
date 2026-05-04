@@ -39,7 +39,7 @@ function createHTML(movies) {
 
 async function init() {
     let data = await getPopularMovies();
-    createHTML(data.results);
+    // createHTML(data.results);
 }
 
 init();
