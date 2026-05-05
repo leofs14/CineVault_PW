@@ -5,7 +5,11 @@ const IMG_ORIGINAL = "https://image.tmdb.org/t/p/original";
 const IMG_FACE = "https://image.tmdb.org/t/p/w185";
 
 let movies = [];
+
+// favorites guarda IDs; favMovies guarda os objetos completos dos filmes favoritos
 let favorites = JSON.parse(localStorage.getItem("cvFavs") || "[]");
+let favMovies  = JSON.parse(localStorage.getItem("cvFavMovies") || "[]");
+
 let genres = [];
 let currentGenre = null;
 let currentNav = "popular";
@@ -169,13 +173,58 @@ function createGenreButtons() {
 // ── Fetch filmes ───────────────────────────────────────────
 
 async function fetchMovies() {
+  if (currentNav === "favs") {
+    await fetchFavMovies();
+    return;
+  }
+
   let url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-PT`;
-  if (currentNav === "top") url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-PT`;
+  if (currentNav === "top")    url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-PT`;
   if (currentNav === "recent") url = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-PT`;
-  if (currentNav === "favs") { render(); return; }
+
   const res = await fetch(url);
   const data = await res.json();
   movies = data.results;
+  render();
+}
+
+// busca os detalhes de cada filme favorito que ainda não estejam em cache
+async function fetchFavMovies() {
+  // IDs que já temos em cache
+  const cachedIds = favMovies.map((m) => m.id);
+
+  // IDs que precisam de ser descarregados
+  const toFetch = favorites.filter((id) => !cachedIds.includes(id));
+
+  if (toFetch.length > 0) {
+    const fetched = await Promise.all(
+      toFetch.map((id) =>
+        fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=pt-PT`)
+          .then((r) => r.json())
+          .catch(() => null)
+      )
+    );
+    // adicionar ao cache local só os que vieram com sucesso
+    fetched.forEach((m) => {
+      if (m && m.id) favMovies.push(m);
+    });
+  }
+
+  // remover do cache filmes que já não estão nos favoritos
+  favMovies = favMovies.filter((m) => favorites.includes(m.id));
+
+  // persistir cache
+  saveFavMovies();
+
+  // preencher genres_ids a partir de genres (pois /movie/:id devolve genres: [{id,name}] em vez de genre_ids)
+  favMovies.forEach((m) => {
+    if (!m.genre_ids && m.genres) {
+      m.genre_ids = m.genres.map((g) => g.id);
+    }
+  });
+
+  // usar favMovies como lista principal para o render
+  movies = [...favMovies];
   render();
 }
 
@@ -186,8 +235,10 @@ function render() {
   grid.innerHTML = "";
 
   let lista = [...movies];
-  if (currentNav === "favs" && !isSearching) lista = movies.filter((m) => favorites.includes(m.id));
-  if (currentGenre !== null) lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
+
+  if (currentGenre !== null) {
+    lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
+  }
 
   updateSectionTitle(lista.length);
 
@@ -371,12 +422,39 @@ document.getElementById("modalFavBtn").addEventListener("click", () => {
 
 function toggleFav(id) {
   if (favorites.includes(id)) {
-    favorites = favorites.filter((f) => f !== id);
+    // remover
+    favorites  = favorites.filter((f) => f !== id);
+    favMovies  = favMovies.filter((m) => m.id !== id);
   } else {
+    // adicionar
     favorites.push(id);
+    // tenta encontrar o objeto do filme no array atual
+    const found = movies.find((m) => m.id === id);
+    if (found && !favMovies.find((m) => m.id === id)) {
+      const clone = { ...found };
+      if (!clone.genre_ids && clone.genres) clone.genre_ids = clone.genres.map((g) => g.id);
+      favMovies.push(clone);
+    }
   }
+
   localStorage.setItem("cvFavs", JSON.stringify(favorites));
+  saveFavMovies();
+
+  // se estivermos na aba de favoritos, recarrega a lista
+  if (currentNav === "favs") {
+    movies = [...favMovies];
+  }
+
   render();
+}
+
+function saveFavMovies() {
+  try {
+    localStorage.setItem("cvFavMovies", JSON.stringify(favMovies));
+  } catch (e) {
+    // localStorage cheio — guarda só os IDs (já estão guardados)
+    console.warn("localStorage cheio, não foi possível guardar cache de filmes.");
+  }
 }
 
 function updateFavBtn() {
