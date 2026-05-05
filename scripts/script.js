@@ -492,6 +492,156 @@ function setNav(nav) {
   fetchMovies();
 }
 
+// ── "Ver todos" overlay ────────────────────────────────────
+
+const allOverlay     = document.getElementById("allOverlay");
+const allOverlayClose = document.getElementById("allOverlayClose");
+const allGrid        = document.getElementById("allGrid");
+const allTitle       = document.getElementById("allTitle");
+const allCount       = document.getElementById("allCount");
+const allSpinner     = document.getElementById("allSpinner");
+
+document.querySelector(".section-action").addEventListener("click", openAllOverlay);
+allOverlayClose.addEventListener("click", closeAllOverlay);
+allOverlay.addEventListener("click", (e) => { if (e.target === allOverlay) closeAllOverlay(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && allOverlay.classList.contains("open") && !document.getElementById("modalOverlay").classList.contains("open")) {
+    closeAllOverlay();
+  }
+});
+
+async function openAllOverlay() {
+  allOverlay.classList.add("open");
+  document.body.classList.add("modal-open");
+  allGrid.innerHTML = "";
+  allSpinner.style.display = "flex";
+
+  // título do overlay
+  const genreName = currentGenre ? genres.find((g) => g.id === currentGenre)?.name : null;
+  allTitle.textContent = genreName ? `Todos — ${genreName}` : "Todos os filmes";
+
+  // recolher múltiplas páginas (até 5) para ter uma lista grande
+  const pages = await fetchAllPages(5);
+
+  // filtrar por género se estiver selecionado
+  let lista = pages;
+  if (currentGenre !== null) {
+    lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
+  }
+
+  // ordenação alfabética
+  lista.sort((a, b) => a.title.localeCompare(b.title, "pt", { sensitivity: "base" }));
+
+  allCount.textContent = `${lista.length} filme${lista.length !== 1 ? "s" : ""}`;
+  allSpinner.style.display = "none";
+
+  if (lista.length === 0) {
+    allGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">🎬</div>
+        <div class="empty-title">Sem filmes</div>
+        <div class="empty-sub">Nenhum filme encontrado para este género.</div>
+      </div>`;
+    return;
+  }
+
+  lista.forEach((m) => {
+    const isFav = favorites.includes(m.id);
+    const year  = m.release_date ? m.release_date.slice(0, 4) : "—";
+    const score = m.vote_average ? m.vote_average.toFixed(1) : null;
+
+    let genreTag = "";
+    if (m.genre_ids && m.genre_ids.length > 0) {
+      const g = genres.find((g) => g.id === m.genre_ids[0]);
+      if (g) genreTag = `<span class="card-genre-tag">${g.name}</span>`;
+    }
+
+    const card = document.createElement("div");
+    card.className = "movie-card";
+
+    card.innerHTML = `
+      <div class="card-poster" title="Ver detalhes">
+        ${m.poster_path
+          ? `<img src="${IMG_URL}${m.poster_path}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+          : `<div class="card-poster-bg" style="background:var(--surface);">
+              <svg class="card-poster-icon" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span class="card-poster-name">${m.title}</span>
+            </div>`
+        }
+        <div class="card-poster-overlay">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M11 8v6M8 11h6"/></svg>
+        </div>
+        ${score ? `<div class="card-score-badge"><span class="badge-star">★</span><span class="badge-score">${score}</span></div>` : ""}
+        <button class="card-fav-btn${isFav ? " active" : ""}" aria-label="Favorito">
+          ${isFav ? "♥" : "♡"}
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${m.title}</div>
+        <div class="card-meta">
+          <span class="card-year">${year}</span>
+          ${genreTag}
+        </div>
+      </div>
+    `;
+
+    card.querySelector(".card-poster").addEventListener("click", () => openModal(m.id));
+    card.querySelector(".card-fav-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavInOverlay(m.id, e.currentTarget);
+    });
+
+    allGrid.appendChild(card);
+  });
+}
+
+function closeAllOverlay() {
+  allOverlay.classList.remove("open");
+  document.body.classList.remove("modal-open");
+}
+
+// busca N páginas da categoria atual em paralelo
+async function fetchAllPages(n) {
+  let endpoint = "popular";
+  if (currentNav === "top")    endpoint = "top_rated";
+  if (currentNav === "recent") endpoint = "now_playing";
+  if (currentNav === "favs")   return [...favMovies]; // favoritos já estão em memória
+
+  const requests = [];
+  for (let p = 1; p <= n; p++) {
+    requests.push(
+      fetch(`${BASE_URL}/movie/${endpoint}?api_key=${API_KEY}&language=pt-PT&page=${p}`)
+        .then((r) => r.json())
+        .then((d) => d.results || [])
+        .catch(() => [])
+    );
+  }
+
+  const pages = await Promise.all(requests);
+  // desduplicar por id
+  const seen = new Set();
+  const all  = [];
+  pages.flat().forEach((m) => {
+    if (!seen.has(m.id)) { seen.add(m.id); all.push(m); }
+  });
+  return all;
+}
+
+// toggle favorito dentro do overlay sem fechar nada
+function toggleFavInOverlay(id, btn) {
+  // encontrar o objeto do filme no allGrid
+  const allCards = [...allGrid.querySelectorAll(".movie-card")];
+  // o objeto pode não estar em movies[], então procuramos no DOM
+  // mas para o cache, o melhor é chamar o toggleFav normal
+  toggleFav(id);
+  // atualizar o botão visualmente sem re-render do overlay inteiro
+  const isFav = favorites.includes(id);
+  btn.textContent = isFav ? "♥" : "♡";
+  btn.classList.toggle("active", isFav);
+}
+
+// ── Init ───────────────────────────────────────────────────
+
 async function init() {
   updateSectionTitle();
   await fetchGenres();
