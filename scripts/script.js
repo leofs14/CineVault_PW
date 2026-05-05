@@ -521,7 +521,7 @@ function setNav(nav) {
 
 let isShowingAll = false;
 
-document.querySelector(".section-action").addEventListener("click", loadAllMovies);
+document.querySelector(".section-action").onclick = loadAllMovies;
 
 async function loadAllMovies() {
   isShowingAll = true;
