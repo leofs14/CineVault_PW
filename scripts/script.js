@@ -85,7 +85,17 @@ function clearSearch() {
   searchInput.value = "";
   searchClear.classList.remove("visible");
   closeAutocomplete();
-  if (isSearching) { isSearching = false; searchQuery = ""; fetchMovies(); }
+  if (isSearching) {
+    isSearching = false;
+    searchQuery = "";
+    if (isShowingAll) {
+      isShowingAll = false;
+      const btn = document.querySelector(".section-action");
+      btn.textContent = "ver todos →";
+      btn.onclick = loadAllMovies;
+    }
+    fetchMovies();
+  }
 }
 
 // ── Autocomplete ───────────────────────────────────────────
@@ -158,14 +168,22 @@ function createGenreButtons() {
   allBtn.textContent = "Todos";
   allBtn.classList.add("genre-btn");
   if (currentGenre === null) allBtn.classList.add("active");
-  allBtn.addEventListener("click", () => { currentGenre = null; render(); createGenreButtons(); });
+  allBtn.addEventListener("click", () => {
+    currentGenre = null;
+    createGenreButtons();
+    if (isShowingAll) { loadAllMovies(); } else { render(); }
+  });
   container.appendChild(allBtn);
   genres.forEach((g) => {
     const btn = document.createElement("button");
     btn.textContent = g.name;
     btn.classList.add("genre-btn");
     if (currentGenre === g.id) btn.classList.add("active");
-    btn.addEventListener("click", () => { currentGenre = g.id; render(); createGenreButtons(); });
+    btn.addEventListener("click", () => {
+      currentGenre = g.id;
+      createGenreButtons();
+      if (isShowingAll) { loadAllMovies(); } else { render(); }
+    });
     container.appendChild(btn);
   });
 }
@@ -488,9 +506,171 @@ function setNav(nav) {
   currentNav = nav;
   isSearching = false;
   searchQuery = "";
+  // sair do modo "ver todos" se estiver ativo
+  if (isShowingAll) {
+    isShowingAll = false;
+    const btn = document.querySelector(".section-action");
+    btn.textContent = "ver todos →";
+    btn.onclick = loadAllMovies;
+  }
   updateSectionTitle();
   fetchMovies();
 }
+
+// ── "Ver todos" ────────────────────────────────────────────
+
+let isShowingAll = false;
+
+document.querySelector(".section-action").onclick = loadAllMovies;
+
+async function loadAllMovies() {
+  isShowingAll = true;
+
+  // botão muda para "← voltar"
+  const btn = document.querySelector(".section-action");
+  btn.textContent = "← voltar";
+  btn.onclick = exitAllMovies;
+
+  // mostrar spinner na grelha
+  const grid = document.getElementById("movieGrid");
+  grid.innerHTML = `
+    <div class="grid-spinner" style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 0;color:var(--muted);font-size:13px;">
+      <div class="spinner-ring"></div>
+      <span>A carregar todos os filmes…</span>
+    </div>`;
+
+  // buscar 5 páginas em paralelo
+  const all = await fetchAllPages(5);
+
+  // filtrar por género se selecionado
+  let lista = currentGenre !== null
+    ? all.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre))
+    : all;
+
+  // ordenar alfabeticamente
+  lista.sort((a, b) => a.title.localeCompare(b.title, "pt", { sensitivity: "base" }));
+
+  // atualizar título e contagem
+  const genreName = currentGenre ? genres.find((g) => g.id === currentGenre)?.name : null;
+  const titleEl = document.getElementById("sectionTitle");
+  const countEl = document.getElementById("sectionCount");
+  titleEl.textContent = genreName ? `Todos — ${genreName}` : "Todos os filmes";
+  countEl.textContent = `${lista.length} filme${lista.length !== 1 ? "s" : ""}`;
+
+  // renderizar diretamente na grelha principal
+  movies = lista;
+  renderAll(lista);
+}
+
+function exitAllMovies() {
+  isShowingAll = false;
+  const btn = document.querySelector(".section-action");
+  btn.textContent = "ver todos →";
+  btn.onclick = loadAllMovies;
+  fetchMovies();
+}
+
+function renderAll(lista) {
+  const grid = document.getElementById("movieGrid");
+  grid.innerHTML = "";
+
+  if (lista.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.style.gridColumn = "1/-1";
+    empty.innerHTML = `
+      <div class="empty-icon">🎬</div>
+      <div class="empty-title">Sem filmes</div>
+      <div class="empty-sub">Nenhum filme encontrado para este género.</div>`;
+    grid.appendChild(empty);
+    return;
+  }
+
+  lista.forEach((m) => {
+    const isFav = favorites.includes(m.id);
+    const year  = m.release_date ? m.release_date.slice(0, 4) : "—";
+    const score = m.vote_average ? m.vote_average.toFixed(1) : null;
+
+    let genreTag = "";
+    if (m.genre_ids && m.genre_ids.length > 0) {
+      const g = genres.find((g) => g.id === m.genre_ids[0]);
+      if (g) genreTag = `<span class="card-genre-tag">${g.name}</span>`;
+    }
+
+    const card = document.createElement("div");
+    card.className = "movie-card";
+    card.setAttribute("role", "listitem");
+
+    card.innerHTML = `
+      <div class="card-poster" title="Ver detalhes">
+        ${m.poster_path
+          ? `<img src="${IMG_URL}${m.poster_path}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+          : `<div class="card-poster-bg" style="background:var(--surface);">
+              <svg class="card-poster-icon" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span class="card-poster-name">${m.title}</span>
+            </div>`
+        }
+        <div class="card-poster-overlay">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M11 8v6M8 11h6"/></svg>
+        </div>
+        ${score ? `<div class="card-score-badge"><span class="badge-star">★</span><span class="badge-score">${score}</span></div>` : ""}
+        <button class="card-fav-btn${isFav ? " active" : ""}" aria-label="Favorito">
+          ${isFav ? "♥" : "♡"}
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${m.title}</div>
+        <div class="card-meta">
+          <span class="card-year">${year}</span>
+          ${genreTag}
+        </div>
+      </div>
+    `;
+
+    card.querySelector(".card-poster").addEventListener("click", () => openModal(m.id));
+    card.querySelector(".card-fav-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id  = m.id;
+      toggleFav(id);
+      const isFavNow = favorites.includes(id);
+      e.currentTarget.textContent = isFavNow ? "♥" : "♡";
+      e.currentTarget.classList.toggle("active", isFavNow);
+    });
+
+    grid.appendChild(card);
+  });
+
+  updateFavBtn();
+}
+
+// busca N páginas da categoria atual em paralelo
+async function fetchAllPages(n) {
+  if (currentNav === "favs") return [...favMovies];
+
+  let endpoint = "popular";
+  if (currentNav === "top")    endpoint = "top_rated";
+  if (currentNav === "recent") endpoint = "now_playing";
+
+  const requests = [];
+  for (let p = 1; p <= n; p++) {
+    requests.push(
+      fetch(`${BASE_URL}/movie/${endpoint}?api_key=${API_KEY}&language=pt-PT&page=${p}`)
+        .then((r) => r.json())
+        .then((d) => d.results || [])
+        .catch(() => [])
+    );
+  }
+
+  const pages = await Promise.all(requests);
+  const seen = new Set();
+  const all  = [];
+  pages.flat().forEach((m) => {
+    if (!seen.has(m.id)) { seen.add(m.id); all.push(m); }
+  });
+  return all;
+}
+
+// ── Init ───────────────────────────────────────────────────
 
 async function init() {
   updateSectionTitle();
