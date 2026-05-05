@@ -84,6 +84,12 @@
             <span id="modalFavIcon">♡</span>
             <span id="modalFavLabel">Adicionar aos favoritos</span>
           </button>
+          <div class="modal-trailer-wrap" id="modalTrailerWrap" style="display:none">
+            <button class="modal-trailer-btn" id="modalTrailerBtn">
+              <span class="modal-trailer-icon">▶</span>
+              Ver Trailer
+            </button>
+          </div>
         </div>
 
         <!-- coluna direita: info -->
@@ -99,6 +105,14 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Lightbox de trailer ── -->
+  <div class="trailer-lightbox" id="trailerLightbox">
+    <button class="trailer-lightbox-close" id="trailerLightboxClose">✕</button>
+    <div class="trailer-lightbox-frame">
+      <iframe id="trailerIframe" src="" allowfullscreen allow="autoplay"></iframe>
     </div>
   </div>
 

@@ -927,6 +927,89 @@ body.modal-open {
   margin-top: 2px;
 }
 
+/* Trailer */
+.modal-trailer-wrap {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.modal-trailer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #E74C3C;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-trailer-btn:hover {
+  background: #c0392b;
+}
+
+.modal-trailer-icon {
+  font-size: 12px;
+}
+
+/* Lightbox trailer */
+.trailer-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.92);
+  align-items: center;
+  justify-content: center;
+}
+
+.trailer-lightbox.open {
+  display: flex;
+}
+
+.trailer-lightbox-frame {
+  width: min(880px, 92vw);
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+}
+
+.trailer-lightbox-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.trailer-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.trailer-lightbox-close:hover {
+  background: rgba(255,255,255,0.2);
+}
+
 /* ── Modal responsivo ── */
 @media (max-width: 600px) {
   .modal-body {

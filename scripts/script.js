@@ -329,7 +329,14 @@ let currentModalMovieId = null;
 
 document.getElementById("modalClose").addEventListener("click", closeModal);
 modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (document.getElementById("trailerLightbox").classList.contains("open")) {
+    closeTrailerLightbox();
+  } else {
+    closeModal();
+  }
+});
 
 async function openModal(movieId) {
   currentModalMovieId = movieId;
@@ -347,13 +354,28 @@ async function openModal(movieId) {
   document.getElementById("modalCastWrap").style.display = "none";
   updateModalFavBtn(movieId);
 
+  // reset trailer
+  document.getElementById("modalTrailerWrap").style.display = "none";
+
   try {
-    const [detailRes, creditsRes] = await Promise.all([
+    const [detailRes, creditsRes, videosRes] = await Promise.all([
       fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=pt-PT`),
-      fetch(`${BASE_URL}/movie/${movieId}/credits?api_key=${API_KEY}&language=pt-PT`)
+      fetch(`${BASE_URL}/movie/${movieId}/credits?api_key=${API_KEY}&language=pt-PT`),
+      fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=pt-PT`)
     ]);
     const movie = await detailRes.json();
     const credits = await creditsRes.json();
+    const videos = await videosRes.json();
+
+    // trailer
+    const trailer = (videos.results || []).find(
+      v => v.site === "YouTube" && v.type === "Trailer"
+    ) || (videos.results || []).find(v => v.site === "YouTube");
+
+    if (trailer) {
+      document.getElementById("modalTrailerWrap").style.display = "block";
+      document.getElementById("modalTrailerBtn").onclick = () => openTrailerLightbox(trailer.key);
+    }
 
     // backdrop
     if (movie.backdrop_path) {
@@ -421,7 +443,23 @@ function closeModal() {
   modalOverlay.classList.remove("open");
   document.body.classList.remove("modal-open");
   currentModalMovieId = null;
+  closeTrailerLightbox();
 }
+
+function openTrailerLightbox(key) {
+  document.getElementById("trailerIframe").src = `https://www.youtube.com/embed/${key}?autoplay=1`;
+  document.getElementById("trailerLightbox").classList.add("open");
+}
+
+function closeTrailerLightbox() {
+  document.getElementById("trailerIframe").src = "";
+  document.getElementById("trailerLightbox").classList.remove("open");
+}
+
+document.getElementById("trailerLightboxClose").addEventListener("click", closeTrailerLightbox);
+document.getElementById("trailerLightbox").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("trailerLightbox")) closeTrailerLightbox();
+});
 
 function updateModalFavBtn(id) {
   const isFav = favorites.includes(id);
