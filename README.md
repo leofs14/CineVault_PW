@@ -13,7 +13,7 @@
 
 ## 🌐 Site
 
-🔗 [Ver o site no GitHub Pages](https://leofs14.github.io/Projeto_PW)
+🔗 [Ver o site no GitHub Pages](https://leofs14.github.io/CineVault_PW/pages/index.html)
 
 ---
 
