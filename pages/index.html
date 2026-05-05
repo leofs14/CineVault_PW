@@ -68,6 +68,40 @@
     </section>
   </main>
 
+  <!-- ── Modal de detalhe ── -->
+  <div class="modal-overlay" id="modalOverlay" aria-modal="true" role="dialog" aria-label="Detalhe do filme">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+
+      <!-- backdrop -->
+      <div class="modal-backdrop" id="modalBackdrop"></div>
+
+      <div class="modal-body">
+        <!-- coluna esquerda: poster -->
+        <div class="modal-poster-col">
+          <div class="modal-poster" id="modalPoster"></div>
+          <button class="modal-fav-btn" id="modalFavBtn">
+            <span id="modalFavIcon">♡</span>
+            <span id="modalFavLabel">Adicionar aos favoritos</span>
+          </button>
+        </div>
+
+        <!-- coluna direita: info -->
+        <div class="modal-info-col">
+          <div class="modal-genres" id="modalGenres"></div>
+          <h2 class="modal-title" id="modalTitle"></h2>
+          <div class="modal-meta" id="modalMeta"></div>
+          <p class="modal-overview" id="modalOverview"></p>
+
+          <div class="modal-cast-wrap" id="modalCastWrap">
+            <div class="modal-cast-label">Elenco principal</div>
+            <div class="modal-cast" id="modalCast"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../scripts/script.js"></script>
 </body>
 </html>

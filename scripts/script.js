@@ -1,6 +1,8 @@
 const API_KEY = "56c0750b96b29e50462add6f1590b200";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMG_URL = "https://image.tmdb.org/t/p/w500";
+const IMG_ORIGINAL = "https://image.tmdb.org/t/p/original";
+const IMG_FACE = "https://image.tmdb.org/t/p/w185";
 
 let movies = [];
 let favorites = JSON.parse(localStorage.getItem("cvFavs") || "[]");
@@ -8,9 +10,7 @@ let genres = [];
 let currentGenre = null;
 let currentNav = "popular";
 
-// estado de pesquisa
 let searchQuery = "";
-let searchResults = [];
 let isSearching = false;
 let searchDebounceTimer = null;
 
@@ -41,56 +41,26 @@ const autocomplete = document.getElementById("autocomplete");
 searchInput.addEventListener("input", () => {
   const val = searchInput.value.trim();
   searchClear.classList.toggle("visible", val.length > 0);
-
   clearTimeout(searchDebounceTimer);
-
-  if (val.length === 0) {
-    closeAutocomplete();
-    clearSearch();
-    return;
-  }
-
+  if (val.length === 0) { closeAutocomplete(); clearSearch(); return; }
   if (val.length < 2) return;
-
-  searchDebounceTimer = setTimeout(() => {
-    handleSearch(val);
-  }, 350);
+  searchDebounceTimer = setTimeout(() => handleSearch(val), 350);
 });
 
 searchInput.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    clearSearch();
-    closeAutocomplete();
-    searchInput.blur();
-  }
-  if (e.key === "Enter" && searchInput.value.trim().length > 1) {
-    closeAutocomplete();
-    commitSearch(searchInput.value.trim());
-  }
+  if (e.key === "Escape") { clearSearch(); closeAutocomplete(); searchInput.blur(); }
+  if (e.key === "Enter" && searchInput.value.trim().length > 1) { closeAutocomplete(); commitSearch(searchInput.value.trim()); }
 });
 
-searchClear.addEventListener("click", () => {
-  clearSearch();
-  searchInput.focus();
-});
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".search-wrap")) {
-    closeAutocomplete();
-  }
-});
+searchClear.addEventListener("click", () => { clearSearch(); searchInput.focus(); });
+document.addEventListener("click", (e) => { if (!e.target.closest(".search-wrap")) closeAutocomplete(); });
 
 async function handleSearch(query) {
   try {
-    const res = await fetch(
-      `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-PT&query=${encodeURIComponent(query)}&page=1`
-    );
+    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-PT&query=${encodeURIComponent(query)}&page=1`);
     const data = await res.json();
-    const results = data.results.slice(0, 6);
-    showAutocomplete(results, query);
-  } catch (err) {
-    console.error("Erro na pesquisa:", err);
-  }
+    showAutocomplete(data.results.slice(0, 6), query);
+  } catch (err) { console.error(err); }
 }
 
 async function commitSearch(query) {
@@ -99,40 +69,26 @@ async function commitSearch(query) {
   currentGenre = null;
   createGenreButtons();
   updateSectionTitle();
-
   try {
-    const res = await fetch(
-      `${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-PT&query=${encodeURIComponent(query)}&page=1`
-    );
+    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-PT&query=${encodeURIComponent(query)}&page=1`);
     const data = await res.json();
     movies = data.results;
     render();
-  } catch (err) {
-    console.error("Erro ao pesquisar filmes:", err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 function clearSearch() {
   searchInput.value = "";
   searchClear.classList.remove("visible");
   closeAutocomplete();
-
-  if (isSearching) {
-    isSearching = false;
-    searchQuery = "";
-    fetchMovies();
-  }
+  if (isSearching) { isSearching = false; searchQuery = ""; fetchMovies(); }
 }
 
 // ── Autocomplete ───────────────────────────────────────────
 
 function showAutocomplete(results, query) {
   autocomplete.innerHTML = "";
-
-  if (results.length === 0) {
-    closeAutocomplete();
-    return;
-  }
+  if (results.length === 0) { closeAutocomplete(); return; }
 
   const header = document.createElement("div");
   header.className = "ac-header";
@@ -142,10 +98,8 @@ function showAutocomplete(results, query) {
   results.forEach((m) => {
     const item = document.createElement("div");
     item.className = "ac-item";
-
     const posterEl = document.createElement("div");
     posterEl.className = "ac-poster";
-
     if (m.poster_path) {
       const img = document.createElement("img");
       img.src = `https://image.tmdb.org/t/p/w92${m.poster_path}`;
@@ -154,56 +108,28 @@ function showAutocomplete(results, query) {
     } else {
       posterEl.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:#555"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
     }
-
     const info = document.createElement("div");
     info.className = "ac-info";
-
-    const title = document.createElement("div");
-    title.className = "ac-title";
-    title.textContent = m.title;
-
-    const meta = document.createElement("div");
-    meta.className = "ac-meta";
-    meta.textContent = m.release_date ? m.release_date.slice(0, 4) : "—";
-
-    info.appendChild(title);
-    info.appendChild(meta);
-
+    info.innerHTML = `<div class="ac-title">${m.title}</div><div class="ac-meta">${m.release_date ? m.release_date.slice(0, 4) : "—"}</div>`;
     const score = document.createElement("div");
     score.className = "ac-score";
     score.textContent = m.vote_average ? `★ ${m.vote_average.toFixed(1)}` : "";
-
     item.appendChild(posterEl);
     item.appendChild(info);
     item.appendChild(score);
-
-    item.addEventListener("click", () => {
-      searchInput.value = m.title;
-      searchClear.classList.add("visible");
-      closeAutocomplete();
-      commitSearch(m.title);
-    });
-
+    item.addEventListener("click", () => { searchInput.value = m.title; searchClear.classList.add("visible"); closeAutocomplete(); commitSearch(m.title); });
     autocomplete.appendChild(item);
   });
 
-  // opção "Ver todos os resultados"
   const divider = document.createElement("div");
   divider.className = "ac-divider";
   autocomplete.appendChild(divider);
 
   const allItem = document.createElement("div");
   allItem.className = "ac-item";
-  allItem.innerHTML = `
-    <div class="ac-external">→</div>
-    <div class="ac-info"><div class="ac-title" style="font-size:12px;color:var(--muted)">Ver todos os resultados para "${query}"</div></div>
-  `;
-  allItem.addEventListener("click", () => {
-    closeAutocomplete();
-    commitSearch(query);
-  });
+  allItem.innerHTML = `<div class="ac-external">→</div><div class="ac-info"><div class="ac-title" style="font-size:12px;color:var(--muted)">Ver todos os resultados para "${query}"</div></div>`;
+  allItem.addEventListener("click", () => { closeAutocomplete(); commitSearch(query); });
   autocomplete.appendChild(allItem);
-
   autocomplete.classList.add("open");
 }
 
@@ -215,9 +141,7 @@ function closeAutocomplete() {
 // ── Géneros ────────────────────────────────────────────────
 
 async function fetchGenres() {
-  const res = await fetch(
-    `${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=pt-PT`
-  );
+  const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=pt-PT`);
   const data = await res.json();
   genres = data.genres;
   createGenreButtons();
@@ -226,40 +150,29 @@ async function fetchGenres() {
 function createGenreButtons() {
   const container = document.getElementById("genreContainer");
   container.innerHTML = "";
-
   const allBtn = document.createElement("button");
   allBtn.textContent = "Todos";
   allBtn.classList.add("genre-btn");
   if (currentGenre === null) allBtn.classList.add("active");
-  allBtn.addEventListener("click", () => {
-    currentGenre = null;
-    render();
-    createGenreButtons();
-  });
+  allBtn.addEventListener("click", () => { currentGenre = null; render(); createGenreButtons(); });
   container.appendChild(allBtn);
-
   genres.forEach((g) => {
     const btn = document.createElement("button");
     btn.textContent = g.name;
     btn.classList.add("genre-btn");
     if (currentGenre === g.id) btn.classList.add("active");
-    btn.addEventListener("click", () => {
-      currentGenre = g.id;
-      render();
-      createGenreButtons();
-    });
+    btn.addEventListener("click", () => { currentGenre = g.id; render(); createGenreButtons(); });
     container.appendChild(btn);
   });
 }
 
-// ── Fetch de filmes ────────────────────────────────────────
+// ── Fetch filmes ───────────────────────────────────────────
 
 async function fetchMovies() {
   let url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-PT`;
   if (currentNav === "top") url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=pt-PT`;
   if (currentNav === "recent") url = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=pt-PT`;
   if (currentNav === "favs") { render(); return; }
-
   const res = await fetch(url);
   const data = await res.json();
   movies = data.results;
@@ -273,14 +186,8 @@ function render() {
   grid.innerHTML = "";
 
   let lista = [...movies];
-
-  if (currentNav === "favs" && !isSearching) {
-    lista = movies.filter((m) => favorites.includes(m.id));
-  }
-
-  if (currentGenre !== null) {
-    lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
-  }
+  if (currentNav === "favs" && !isSearching) lista = movies.filter((m) => favorites.includes(m.id));
+  if (currentGenre !== null) lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
 
   updateSectionTitle(lista.length);
 
@@ -305,7 +212,6 @@ function render() {
     const year = m.release_date ? m.release_date.slice(0, 4) : "—";
     const score = m.vote_average ? m.vote_average.toFixed(1) : null;
 
-    // genre tag — primeiro género do filme
     let genreTag = "";
     if (m.genre_ids && m.genre_ids.length > 0) {
       const g = genres.find((g) => g.id === m.genre_ids[0]);
@@ -313,15 +219,17 @@ function render() {
     }
 
     card.innerHTML = `
-      <div class="card-poster">
-        ${
-          m.poster_path
-            ? `<img src="${IMG_URL}${m.poster_path}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;display:block;">`
-            : `<div class="card-poster-bg" style="background:var(--surface);">
-                <svg class="card-poster-icon" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                <span class="card-poster-name">${m.title}</span>
-              </div>`
+      <div class="card-poster" title="Ver detalhes">
+        ${m.poster_path
+          ? `<img src="${IMG_URL}${m.poster_path}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;display:block;">`
+          : `<div class="card-poster-bg" style="background:var(--surface);">
+              <svg class="card-poster-icon" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span class="card-poster-name">${m.title}</span>
+            </div>`
         }
+        <div class="card-poster-overlay">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M11 8v6M8 11h6"/></svg>
+        </div>
         ${score ? `<div class="card-score-badge"><span class="badge-star">★</span><span class="badge-score">${score}</span></div>` : ""}
         <button class="card-fav-btn${isFav ? " active" : ""}" data-id="${m.id}" aria-label="${isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}">
           ${isFav ? "♥" : "♡"}
@@ -336,16 +244,128 @@ function render() {
       </div>
     `;
 
-    card.querySelector(".card-fav-btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleFav(m.id);
-    });
+    card.querySelector(".card-poster").addEventListener("click", () => openModal(m.id));
+    card.querySelector(".card-fav-btn").addEventListener("click", (e) => { e.stopPropagation(); toggleFav(m.id); });
 
     grid.appendChild(card);
   });
 
   updateFavBtn();
 }
+
+// ── Modal ──────────────────────────────────────────────────
+
+const modalOverlay = document.getElementById("modalOverlay");
+let currentModalMovieId = null;
+
+document.getElementById("modalClose").addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+async function openModal(movieId) {
+  currentModalMovieId = movieId;
+  document.body.classList.add("modal-open");
+  modalOverlay.classList.add("open");
+
+  // reset conteúdo
+  document.getElementById("modalBackdrop").style.backgroundImage = "";
+  document.getElementById("modalPoster").innerHTML = `<div class="modal-poster-loading"></div>`;
+  document.getElementById("modalTitle").textContent = "A carregar…";
+  document.getElementById("modalGenres").innerHTML = "";
+  document.getElementById("modalMeta").innerHTML = "";
+  document.getElementById("modalOverview").textContent = "";
+  document.getElementById("modalCast").innerHTML = "";
+  document.getElementById("modalCastWrap").style.display = "none";
+  updateModalFavBtn(movieId);
+
+  try {
+    const [detailRes, creditsRes] = await Promise.all([
+      fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=pt-PT`),
+      fetch(`${BASE_URL}/movie/${movieId}/credits?api_key=${API_KEY}&language=pt-PT`)
+    ]);
+    const movie = await detailRes.json();
+    const credits = await creditsRes.json();
+
+    // backdrop
+    if (movie.backdrop_path) {
+      document.getElementById("modalBackdrop").style.backgroundImage = `url(${IMG_ORIGINAL}${movie.backdrop_path})`;
+    }
+
+    // poster
+    const posterEl = document.getElementById("modalPoster");
+    if (movie.poster_path) {
+      posterEl.innerHTML = `<img src="${IMG_URL}${movie.poster_path}" alt="${movie.title}">`;
+    } else {
+      posterEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:48px;background:var(--card);border-radius:12px;">🎬</div>`;
+    }
+
+    // título
+    document.getElementById("modalTitle").textContent = movie.title;
+
+    // géneros
+    if (movie.genres && movie.genres.length > 0) {
+      document.getElementById("modalGenres").innerHTML = movie.genres
+        .map(g => `<span class="modal-genre-tag">${g.name}</span>`)
+        .join("");
+    }
+
+    // meta
+    const year = movie.release_date ? movie.release_date.slice(0, 4) : "—";
+    const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}min` : null;
+    const score = movie.vote_average ? movie.vote_average.toFixed(1) : null;
+    const votes = movie.vote_count ? movie.vote_count.toLocaleString("pt-PT") : null;
+
+    document.getElementById("modalMeta").innerHTML = `
+      <span class="modal-meta-item">${year}</span>
+      ${runtime ? `<span class="modal-meta-sep">·</span><span class="modal-meta-item">${runtime}</span>` : ""}
+      ${score ? `<span class="modal-meta-sep">·</span><span class="modal-meta-score">★ ${score}</span>${votes ? `<span class="modal-meta-votes">(${votes} votos)</span>` : ""}` : ""}
+    `;
+
+    // sinopse
+    document.getElementById("modalOverview").textContent = movie.overview || "Sem sinopse disponível em português.";
+
+    // elenco
+    const cast = (credits.cast || []).slice(0, 8);
+    if (cast.length > 0) {
+      document.getElementById("modalCast").innerHTML = cast.map(p => `
+        <div class="cast-item">
+          <div class="cast-photo">
+            ${p.profile_path
+              ? `<img src="${IMG_FACE}${p.profile_path}" alt="${p.name}">`
+              : `<div class="cast-photo-placeholder">${p.name.charAt(0)}</div>`
+            }
+          </div>
+          <div class="cast-name">${p.name}</div>
+          <div class="cast-char">${p.character || ""}</div>
+        </div>
+      `).join("");
+      document.getElementById("modalCastWrap").style.display = "block";
+    }
+
+  } catch (err) {
+    console.error("Erro ao carregar detalhe:", err);
+    document.getElementById("modalTitle").textContent = "Erro ao carregar";
+  }
+}
+
+function closeModal() {
+  modalOverlay.classList.remove("open");
+  document.body.classList.remove("modal-open");
+  currentModalMovieId = null;
+}
+
+function updateModalFavBtn(id) {
+  const isFav = favorites.includes(id);
+  document.getElementById("modalFavIcon").textContent = isFav ? "♥" : "♡";
+  document.getElementById("modalFavLabel").textContent = isFav ? "Remover dos favoritos" : "Adicionar aos favoritos";
+  document.getElementById("modalFavBtn").classList.toggle("active", isFav);
+}
+
+document.getElementById("modalFavBtn").addEventListener("click", () => {
+  if (currentModalMovieId === null) return;
+  toggleFav(currentModalMovieId);
+  updateModalFavBtn(currentModalMovieId);
+});
 
 // ── Favoritos ──────────────────────────────────────────────
 
@@ -372,30 +392,19 @@ function updateFavBtn() {
   }
 }
 
-// ── Título da secção ───────────────────────────────────────
+// ── Título ─────────────────────────────────────────────────
 
 function updateSectionTitle(count) {
   const titleEl = document.getElementById("sectionTitle");
   const countEl = document.getElementById("sectionCount");
-
   if (isSearching) {
     titleEl.textContent = `Resultados para "${searchQuery}"`;
   } else {
-    const titles = {
-      popular: "Filmes populares",
-      top: "Mais votados",
-      recent: "Recentes",
-      favs: "Os meus favoritos",
-    };
+    const titles = { popular: "Filmes populares", top: "Mais votados", recent: "Recentes", favs: "Os meus favoritos" };
     titleEl.textContent = titles[currentNav] || "Filmes";
   }
-
-  if (count !== undefined) {
-    countEl.textContent = count > 0 ? `${count} filme${count !== 1 ? "s" : ""}` : "";
-  }
+  if (count !== undefined) countEl.textContent = count > 0 ? `${count} filme${count !== 1 ? "s" : ""}` : "";
 }
-
-// ── Nav ────────────────────────────────────────────────────
 
 function setNav(nav) {
   currentNav = nav;
@@ -404,8 +413,6 @@ function setNav(nav) {
   updateSectionTitle();
   fetchMovies();
 }
-
-// ── Init ───────────────────────────────────────────────────
 
 async function init() {
   updateSectionTitle();
