@@ -85,7 +85,17 @@ function clearSearch() {
   searchInput.value = "";
   searchClear.classList.remove("visible");
   closeAutocomplete();
-  if (isSearching) { isSearching = false; searchQuery = ""; fetchMovies(); }
+  if (isSearching) {
+    isSearching = false;
+    searchQuery = "";
+    if (isShowingAll) {
+      isShowingAll = false;
+      const btn = document.querySelector(".section-action");
+      btn.textContent = "ver todos →";
+      btn.onclick = loadAllMovies;
+    }
+    fetchMovies();
+  }
 }
 
 // ── Autocomplete ───────────────────────────────────────────
@@ -158,14 +168,22 @@ function createGenreButtons() {
   allBtn.textContent = "Todos";
   allBtn.classList.add("genre-btn");
   if (currentGenre === null) allBtn.classList.add("active");
-  allBtn.addEventListener("click", () => { currentGenre = null; render(); createGenreButtons(); });
+  allBtn.addEventListener("click", () => {
+    currentGenre = null;
+    createGenreButtons();
+    if (isShowingAll) { loadAllMovies(); } else { render(); }
+  });
   container.appendChild(allBtn);
   genres.forEach((g) => {
     const btn = document.createElement("button");
     btn.textContent = g.name;
     btn.classList.add("genre-btn");
     if (currentGenre === g.id) btn.classList.add("active");
-    btn.addEventListener("click", () => { currentGenre = g.id; render(); createGenreButtons(); });
+    btn.addEventListener("click", () => {
+      currentGenre = g.id;
+      createGenreButtons();
+      if (isShowingAll) { loadAllMovies(); } else { render(); }
+    });
     container.appendChild(btn);
   });
 }
@@ -488,60 +506,83 @@ function setNav(nav) {
   currentNav = nav;
   isSearching = false;
   searchQuery = "";
+  // sair do modo "ver todos" se estiver ativo
+  if (isShowingAll) {
+    isShowingAll = false;
+    const btn = document.querySelector(".section-action");
+    btn.textContent = "ver todos →";
+    btn.onclick = loadAllMovies;
+  }
   updateSectionTitle();
   fetchMovies();
 }
 
-// ── "Ver todos" overlay ────────────────────────────────────
+// ── "Ver todos" ────────────────────────────────────────────
 
-const allOverlay     = document.getElementById("allOverlay");
-const allOverlayClose = document.getElementById("allOverlayClose");
-const allGrid        = document.getElementById("allGrid");
-const allTitle       = document.getElementById("allTitle");
-const allCount       = document.getElementById("allCount");
-const allSpinner     = document.getElementById("allSpinner");
+let isShowingAll = false;
 
-document.querySelector(".section-action").addEventListener("click", openAllOverlay);
-allOverlayClose.addEventListener("click", closeAllOverlay);
-allOverlay.addEventListener("click", (e) => { if (e.target === allOverlay) closeAllOverlay(); });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && allOverlay.classList.contains("open") && !document.getElementById("modalOverlay").classList.contains("open")) {
-    closeAllOverlay();
-  }
-});
+document.querySelector(".section-action").addEventListener("click", loadAllMovies);
 
-async function openAllOverlay() {
-  allOverlay.classList.add("open");
-  document.body.classList.add("modal-open");
-  allGrid.innerHTML = "";
-  allSpinner.style.display = "flex";
+async function loadAllMovies() {
+  isShowingAll = true;
 
-  // título do overlay
-  const genreName = currentGenre ? genres.find((g) => g.id === currentGenre)?.name : null;
-  allTitle.textContent = genreName ? `Todos — ${genreName}` : "Todos os filmes";
+  // botão muda para "← voltar"
+  const btn = document.querySelector(".section-action");
+  btn.textContent = "← voltar";
+  btn.onclick = exitAllMovies;
 
-  // recolher múltiplas páginas (até 5) para ter uma lista grande
-  const pages = await fetchAllPages(5);
+  // mostrar spinner na grelha
+  const grid = document.getElementById("movieGrid");
+  grid.innerHTML = `
+    <div class="grid-spinner" style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 0;color:var(--muted);font-size:13px;">
+      <div class="spinner-ring"></div>
+      <span>A carregar todos os filmes…</span>
+    </div>`;
 
-  // filtrar por género se estiver selecionado
-  let lista = pages;
-  if (currentGenre !== null) {
-    lista = lista.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre));
-  }
+  // buscar 5 páginas em paralelo
+  const all = await fetchAllPages(5);
 
-  // ordenação alfabética
+  // filtrar por género se selecionado
+  let lista = currentGenre !== null
+    ? all.filter((m) => m.genre_ids && m.genre_ids.includes(currentGenre))
+    : all;
+
+  // ordenar alfabeticamente
   lista.sort((a, b) => a.title.localeCompare(b.title, "pt", { sensitivity: "base" }));
 
-  allCount.textContent = `${lista.length} filme${lista.length !== 1 ? "s" : ""}`;
-  allSpinner.style.display = "none";
+  // atualizar título e contagem
+  const genreName = currentGenre ? genres.find((g) => g.id === currentGenre)?.name : null;
+  const titleEl = document.getElementById("sectionTitle");
+  const countEl = document.getElementById("sectionCount");
+  titleEl.textContent = genreName ? `Todos — ${genreName}` : "Todos os filmes";
+  countEl.textContent = `${lista.length} filme${lista.length !== 1 ? "s" : ""}`;
+
+  // renderizar diretamente na grelha principal
+  movies = lista;
+  renderAll(lista);
+}
+
+function exitAllMovies() {
+  isShowingAll = false;
+  const btn = document.querySelector(".section-action");
+  btn.textContent = "ver todos →";
+  btn.onclick = loadAllMovies;
+  fetchMovies();
+}
+
+function renderAll(lista) {
+  const grid = document.getElementById("movieGrid");
+  grid.innerHTML = "";
 
   if (lista.length === 0) {
-    allGrid.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="empty-icon">🎬</div>
-        <div class="empty-title">Sem filmes</div>
-        <div class="empty-sub">Nenhum filme encontrado para este género.</div>
-      </div>`;
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.style.gridColumn = "1/-1";
+    empty.innerHTML = `
+      <div class="empty-icon">🎬</div>
+      <div class="empty-title">Sem filmes</div>
+      <div class="empty-sub">Nenhum filme encontrado para este género.</div>`;
+    grid.appendChild(empty);
     return;
   }
 
@@ -558,6 +599,7 @@ async function openAllOverlay() {
 
     const card = document.createElement("div");
     card.className = "movie-card";
+    card.setAttribute("role", "listitem");
 
     card.innerHTML = `
       <div class="card-poster" title="Ver detalhes">
@@ -588,24 +630,26 @@ async function openAllOverlay() {
     card.querySelector(".card-poster").addEventListener("click", () => openModal(m.id));
     card.querySelector(".card-fav-btn").addEventListener("click", (e) => {
       e.stopPropagation();
-      toggleFavInOverlay(m.id, e.currentTarget);
+      const id  = m.id;
+      toggleFav(id);
+      const isFavNow = favorites.includes(id);
+      e.currentTarget.textContent = isFavNow ? "♥" : "♡";
+      e.currentTarget.classList.toggle("active", isFavNow);
     });
 
-    allGrid.appendChild(card);
+    grid.appendChild(card);
   });
-}
 
-function closeAllOverlay() {
-  allOverlay.classList.remove("open");
-  document.body.classList.remove("modal-open");
+  updateFavBtn();
 }
 
 // busca N páginas da categoria atual em paralelo
 async function fetchAllPages(n) {
+  if (currentNav === "favs") return [...favMovies];
+
   let endpoint = "popular";
   if (currentNav === "top")    endpoint = "top_rated";
   if (currentNav === "recent") endpoint = "now_playing";
-  if (currentNav === "favs")   return [...favMovies]; // favoritos já estão em memória
 
   const requests = [];
   for (let p = 1; p <= n; p++) {
@@ -618,26 +662,12 @@ async function fetchAllPages(n) {
   }
 
   const pages = await Promise.all(requests);
-  // desduplicar por id
   const seen = new Set();
   const all  = [];
   pages.flat().forEach((m) => {
     if (!seen.has(m.id)) { seen.add(m.id); all.push(m); }
   });
   return all;
-}
-
-// toggle favorito dentro do overlay sem fechar nada
-function toggleFavInOverlay(id, btn) {
-  // encontrar o objeto do filme no allGrid
-  const allCards = [...allGrid.querySelectorAll(".movie-card")];
-  // o objeto pode não estar em movies[], então procuramos no DOM
-  // mas para o cache, o melhor é chamar o toggleFav normal
-  toggleFav(id);
-  // atualizar o botão visualmente sem re-render do overlay inteiro
-  const isFav = favorites.includes(id);
-  btn.textContent = isFav ? "♥" : "♡";
-  btn.classList.toggle("active", isFav);
 }
 
 // ── Init ───────────────────────────────────────────────────
