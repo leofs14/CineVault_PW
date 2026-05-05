@@ -754,6 +754,14 @@ body.modal-open {
   100% { background-position: -200% 0; }
 }
 
+/* Wrapper dos botões do poster */
+.modal-poster-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
 /* Botão favorito no modal */
 .modal-fav-btn {
   display: flex;
@@ -1030,10 +1038,18 @@ body.modal-open {
     min-height: 165px;
   }
 
-  .modal-fav-btn {
+  .modal-poster-btns {
     flex: 1;
+    align-self: stretch;
+  }
+
+  .modal-fav-btn {
     flex-direction: column;
     gap: 4px;
+    height: 60px;
+  }
+
+  .modal-trailer-btn {
     height: 60px;
   }
 
