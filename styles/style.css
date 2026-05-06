@@ -340,6 +340,17 @@ ul {
   background: var(--border);
 }
 
+.ac-actor-badge {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
 .ac-external {
   width: 30px;
   display: flex;
@@ -886,6 +897,12 @@ body.modal-open {
 .cast-item {
   width: 72px;
   text-align: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cast-item:hover {
+  opacity: 0.75;
 }
 
 .cast-photo {
@@ -964,6 +981,278 @@ body.modal-open {
 
 .modal-trailer-icon {
   font-size: 12px;
+}
+
+/* ── Painel do ator ── */
+.actor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.actor-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.actor-panel {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 88vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+}
+
+.actor-overlay.open .actor-panel {
+  transform: translateY(0);
+}
+
+.actor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.actor-back-btn {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  transition: color 0.15s;
+}
+
+.actor-back-btn:hover {
+  color: var(--text);
+}
+
+.actor-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.actor-close-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.actor-panel-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.actor-panel-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* Secção de info do ator */
+.actor-info {
+  display: flex;
+  gap: 28px;
+}
+
+.actor-photo-col {
+  flex-shrink: 0;
+}
+
+.actor-photo {
+  width: 140px;
+  height: 210px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.actor-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.actor-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: var(--muted);
+}
+
+.actor-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.actor-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.actor-meta-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.actor-meta-item {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.actor-meta-item strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.actor-bio {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.actor-bio.expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.actor-bio-toggle {
+  font-size: 12px;
+  color: var(--primary);
+  font-family: 'DM Mono', monospace;
+  margin-top: 4px;
+  align-self: flex-start;
+}
+
+.actor-bio-toggle:hover {
+  color: var(--hover);
+}
+
+/* Filmografia */
+.actor-filmography-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.actor-films-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 14px;
+}
+
+.actor-film-card {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actor-film-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.actor-film-card:hover .actor-film-poster {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+}
+
+.actor-film-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.actor-film-title {
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actor-film-year {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+@media (max-width: 600px) {
+  .actor-panel-body {
+    padding: 20px 16px;
+  }
+
+  .actor-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .actor-meta-row {
+    justify-content: center;
+  }
+
+  .actor-bio-toggle {
+    align-self: center;
+  }
+
+  .actor-films-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
 }
 
 /* Lightbox trailer */
