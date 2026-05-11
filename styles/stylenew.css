@@ -1,0 +1,351 @@
+/* ════════════════════════════════════════
+   CineVault — CSS from scratch
+   Aesthetic: Cinema Noir / Editorial
+   ════════════════════════════════════════ */
+
+/* ── Tokens ── */
+:root {
+  --black:    #0b0b0d;
+  --surface:  #111114;
+  --card:     #18181d;
+  --raised:   #1f1f26;
+  --border:   rgba(255,255,255,0.07);
+  --border-h: rgba(255,255,255,0.14);
+
+  --gold:     #c9a84c;
+  --gold-dim: rgba(201,168,76,0.15);
+  --red:      #c0392b;
+
+  --text:     #ede8df;
+  --muted:    #7a7670;
+  --faint:    #3a3835;
+
+  --radius:   10px;
+  --nav-h:    58px;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
+  /* subtle grain */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+ul { list-style: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+/* ── NAVBAR ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-h);
+  background: rgba(11,11,13,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 40px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--red);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-play {
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 12px solid #fff;
+  margin-left: 3px;
+}
+
+.logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.logo-text span { color: var(--red); }
+
+/* Nav links */
+.nav-links {
+  display: flex;
+  height: var(--nav-h);
+}
+
+.nav-link {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-link:hover { color: var(--text); }
+
+.nav-link.active {
+  color: var(--text);
+  border-bottom-color: var(--red);
+}
+
+.nav-spacer { flex: 1; }
+
+/* ── MAIN ── */
+.main {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* ── Section header ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* decorative line after title */
+.section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border-h), transparent);
+}
+
+.section-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ── Movie grid ── */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 16px;
+}
+
+/* ── Movie card ── */
+.movie-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+  will-change: transform;
+  animation: cardIn 0.4s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.movie-card:hover {
+  transform: translateY(-5px) scale(1.015);
+  border-color: rgba(201, 168, 76, 0.35);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(201,168,76,0.15);
+}
+
+/* Poster */
+.card-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  position: relative;
+  overflow: hidden;
+  background: var(--raised);
+}
+
+.card-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.38s ease;
+}
+
+.movie-card:hover .card-poster img {
+  transform: scale(1.07);
+}
+
+/* No-poster fallback */
+.card-poster-bg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--raised);
+}
+
+.card-poster-icon { font-size: 28px; opacity: 0.2; }
+
+.card-poster-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: center;
+  padding: 0 12px;
+  line-height: 1.4;
+}
+
+/* Score badge */
+.card-score-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.78);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.movie-card:hover .card-score-badge { transform: scale(1.07); }
+
+.badge-star {
+  color: var(--red);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.badge-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: #fff;
+  line-height: 1;
+}
+
+/* Overlay */
+.card-poster-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  font-size: 32px;
+  color: #fff;
+  transition: opacity 0.22s ease;
+}
+
+.movie-card:hover .card-poster-overlay { opacity: 1; }
+
+/* Card body */
+.card-body {
+  padding: 10px 12px 13px;
+  border-top: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+  transition: color 0.2s;
+}
+
+.movie-card:hover .card-title { color: #fff; }
+
+.card-meta { display: flex; align-items: center; gap: 6px; }
+
+.card-year {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Loading state ── */
+#app:has(.movie-grid) + * { display: none; }
+
+/* ── Error / empty state ── */
+.empty-state {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.empty-icon { font-size: 36px; opacity: 0.25; margin-bottom: 18px; }
+
+.empty-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .navbar  { padding: 0 18px; gap: 0; }
+  .nav-links { display: none; }
+  .main    { padding: 28px 18px 60px; }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+}
+
+@media (max-width: 400px) {
+  .movie-grid { grid-template-columns: repeat(2, 1fr); }
+}
