@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVault — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/stylenew.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon"><div class="logo-play"></div></div>
+      <span class="logo-text">Cine<span>Vault</span></span>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+          <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Criar conta</button>
+        </div>
+
+        <div id="form-login">
+          <h2 class="auth-title">Bem-vindo de volta</h2>
+          <p class="auth-sub">Entra para continuares a explorar filmes.</p>
+
+          <div class="field-group">
+            <label class="field-label" for="login-email">Email</label>
+            <input class="field-input" type="email" id="login-email" placeholder="exemplo@email.com">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="login-pass">Password</label>
+            <input class="field-input" type="password" id="login-pass" placeholder="••••••••">
+          </div>
+
+          <div id="login-error" class="auth-error hidden"></div>
+
+          <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar</button>
+        </div>
+
+        <div id="form-register" class="hidden">
+          <h2 class="auth-title">Criar conta</h2>
+          <p class="auth-sub">Junta-te ao CineVault gratuitamente.</p>
+
+          <div class="field-group">
+            <label class="field-label" for="reg-email">Email</label>
+            <input class="field-input" type="email" id="reg-email" placeholder="exemplo@email.com">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="reg-pass">Password</label>
+            <input class="field-input" type="password" id="reg-pass" placeholder="mínimo 6 caracteres">
+          </div>
+
+          <div id="reg-error" class="auth-error hidden"></div>
+
+          <button class="btn-primary" id="btn-register" onclick="doRegister()">Criar conta</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="../scripts/login.js"></script>
+</body>
+</html>
