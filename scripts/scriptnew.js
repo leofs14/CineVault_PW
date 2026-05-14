@@ -1,3 +1,31 @@
+import { initializeApp }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged,
+         signOut }                 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBImVbDwiOyzoBmRq1fSFtSIIUg1x1Ub-4",
+    authDomain: "cinevault-dd04c.firebaseapp.com",
+    projectId: "cinevault-dd04c",
+    storageBucket: "cinevault-dd04c.firebasestorage.app",
+    messagingSenderId: "834500706718",
+    appId: "1:834500706718:web:cb980461b41a355f6a568f"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("user-email").textContent = user.email;
+  fetchPopularMovies().then(renderMovies).catch(err => renderError(err.message));
+});
+
+window.doLogout = () => signOut(auth);
+
 const API_KEY  = "56c0750b96b29e50462add6f1590b200";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/w342";

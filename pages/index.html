@@ -20,6 +20,12 @@
       <li><span class="nav-link active">Populares</span></li>
     </ul>
     <div class="nav-spacer"></div>
+
+    <!-- Utilizador autenticado -->
+    <div class="nav-user">
+      <span class="nav-user-email" id="user-email"></span>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
   </nav>
 
   <main class="main">
@@ -30,6 +36,7 @@
     <div id="app"></div>
   </main>
 
-  <script src="../scripts/scriptnew.js" defer></script>
+  <!-- type="module" obrigatório para usar imports do Firebase -->
+  <script type="module" src="../scripts/scriptnew.js"></script>
 </body>
 </html>
