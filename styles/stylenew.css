@@ -361,6 +361,98 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   opacity: 0.6;
 }
 
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .navbar  { padding: 0 18px; gap: 0; }
+  .nav-links { display: none; }
+  .main    { padding: 28px 18px 60px; }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+}
+
+@media (max-width: 400px) {
+  .movie-grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* ── Overlay ── */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 200;
+}
+
+#overlay.visivel {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.overlay-caixa {
+  background: var(--card);
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 640px;
+  width: 90%;
+  position: relative;
+}
+
+.overlay-poster {
+  width: 140px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.overlay-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.overlay-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.overlay-ano {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.overlay-nota {
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.overlay-sinopse {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.overlay-fechar {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.overlay-fechar:hover { color: var(--text); }
+
 /* ════════════════════════════════════════
    AUTH PAGE (login.html)
    ════════════════════════════════════════ */

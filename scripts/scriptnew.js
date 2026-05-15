@@ -93,6 +93,8 @@ function criarHtmlFilme(filme, indice) {
     titulo.textContent  = filme.title;
     ano.className       = 'card-year';
     ano.textContent     = filme.release_date?.slice(0, 4) ?? '—';
+
+    card.addEventListener('click', () => mostrarOverlay(filme));
 }
 
 function criarGrid(app) {
@@ -101,6 +103,27 @@ function criarGrid(app) {
     app.replaceChildren(grid);
     return grid;
 }
+
+function mostrarOverlay(filme) {
+    const overlay = document.querySelector('#overlay');
+
+    overlay.querySelector('.overlay-poster').src       = filme.poster_path ? `${IMG_BASE}${filme.poster_path}` : '';
+    overlay.querySelector('.overlay-poster').alt       = filme.title;
+    overlay.querySelector('.overlay-titulo').textContent   = filme.title;
+    overlay.querySelector('.overlay-ano').textContent      = filme.release_date?.slice(0, 4) ?? '—';
+    overlay.querySelector('.overlay-nota').textContent     = `★ ${filme.vote_average?.toFixed(1) ?? '—'}`;
+    overlay.querySelector('.overlay-sinopse').textContent  = filme.overview || 'Sem sinopse disponível.';
+
+    overlay.classList.add('visivel');
+}
+
+function fecharOverlay() {
+    document.querySelector('#overlay').classList.remove('visivel');
+}
+
+document.querySelector('#overlay').addEventListener('click', fecharOverlay);
+document.querySelector('#overlay .overlay-caixa').addEventListener('click', e => e.stopPropagation());
+document.querySelector('#overlay .overlay-fechar').addEventListener('click', fecharOverlay);
 
 function criarHtmlErro(mensagem) {
     document.querySelector('#app').innerHTML = `
