@@ -40,6 +40,8 @@ O objetivo é criar uma experiência fluida e visualmente apelativa, com atualiz
 |-----|-----------|--------------|
 | **TMDB API** | Dados de filmes, géneros, elenco, imagens e trailers | [developers.themoviedb.org](https://developers.themoviedb.org) |
 | **YouTube IFrame API** | Reprodução de trailers diretamente no site | [developers.google.com](https://developers.google.com/youtube/iframe_api_reference) |
+| **Firebase API** | Base de dados | [developers.google.com](https://firebase.google.com/) |
+
 
 ---
 
