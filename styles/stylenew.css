@@ -403,11 +403,52 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   position: relative;
 }
 
-.overlay-poster {
-  width: 140px;
+.overlay-esquerda {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   flex-shrink: 0;
+  width: 140px;
+}
+
+.overlay-poster {
+  width: 100%;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.overlay-fav {
+  width: 100%;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.overlay-fav:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.overlay-fav.ativo {
+  background: rgba(192, 57, 43, 0.12);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.overlay-fav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .overlay-info {
