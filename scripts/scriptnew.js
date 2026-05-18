@@ -1,7 +1,7 @@
 import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc,
-         deleteDoc, getDoc }                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc,
+         getDoc, collection, getDocs }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBImVbDwiOyzoBmRq1fSFtSIIUg1x1Ub-4",
@@ -22,6 +22,7 @@ const IMG_BASE = "https://image.tmdb.org/t/p/w342";
 
 let currentUser  = null;
 let currentFilme = null;
+let abaAtiva     = 'populares';
 
 // ── Auth guard ──────────────────────────────────────────
 onAuthStateChanged(auth, user => {
@@ -31,15 +32,64 @@ onAuthStateChanged(auth, user => {
     }
     currentUser = user;
     document.getElementById("user-email").textContent = user.email;
-    obterFilmesPopulares()
-        .then(filmes => {
-            document.querySelector('#count').textContent = `${filmes.length} filmes`;
-            filmes.forEach((filme, i) => criarHtmlFilme(filme, i));
-        })
-        .catch(err => criarHtmlErro(err.message));
+    mostrarPopulares();
 });
 
 window.doLogout = () => signOut(auth);
+
+// ── Tab switching ───────────────────────────────────────
+document.getElementById('tab-populares').addEventListener('click', () => {
+    if (abaAtiva === 'populares') return;
+    abaAtiva = 'populares';
+    document.getElementById('tab-populares').classList.add('active');
+    document.getElementById('tab-favoritos').classList.remove('active');
+    document.getElementById('section-title').textContent = 'Filmes Populares';
+    mostrarPopulares();
+});
+
+document.getElementById('tab-favoritos').addEventListener('click', () => {
+    if (abaAtiva === 'favoritos') return;
+    abaAtiva = 'favoritos';
+    document.getElementById('tab-favoritos').classList.add('active');
+    document.getElementById('tab-populares').classList.remove('active');
+    document.getElementById('section-title').textContent = 'Os Meus Favoritos';
+    mostrarFavoritos();
+});
+
+// ── Views ───────────────────────────────────────────────
+async function mostrarPopulares() {
+    document.querySelector('#app').innerHTML = '';
+    try {
+        const filmes = await obterFilmesPopulares();
+        document.querySelector('#count').textContent = `${filmes.length} filmes`;
+        filmes.forEach((filme, i) => criarHtmlFilme(filme, i));
+    } catch (err) {
+        criarHtmlErro(err.message);
+    }
+}
+
+async function mostrarFavoritos() {
+    if (!currentUser) return;
+    const container = document.querySelector('#app');
+    container.innerHTML = '';
+    try {
+        const snap   = await getDocs(collection(db, 'users', currentUser.uid, 'favoritos'));
+        const filmes = snap.docs.map(d => d.data());
+        document.querySelector('#count').textContent = `${filmes.length} filmes`;
+        if (filmes.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">♡</div>
+                    <div class="empty-title">Sem favoritos ainda</div>
+                    <div class="empty-sub">Adiciona filmes aos favoritos para os ver aqui.</div>
+                </div>`;
+            return;
+        }
+        filmes.forEach((filme, i) => criarHtmlFilme(filme, i));
+    } catch (err) {
+        criarHtmlErro(err.message);
+    }
+}
 
 // ── TMDB ────────────────────────────────────────────────
 async function obterFilmesPopulares() {
@@ -57,17 +107,17 @@ function criarGrid(container) {
 }
 
 function criarHtmlFilme(filme, indice) {
-    const container = document.querySelector('#app');
-    const grid      = container.querySelector('.movie-grid') ?? criarGrid(container);
-    const card      = document.createElement('div');
-    const poster    = document.createElement('div');
-    const body      = document.createElement('div');
-    const titulo    = document.createElement('div');
-    const meta      = document.createElement('div');
-    const ano       = document.createElement('span');
-    const badge     = document.createElement('div');
-    const estrela   = document.createElement('span');
-    const nota      = document.createElement('span');
+    const container   = document.querySelector('#app');
+    const grid        = container.querySelector('.movie-grid') ?? criarGrid(container);
+    const card        = document.createElement('div');
+    const poster      = document.createElement('div');
+    const body        = document.createElement('div');
+    const titulo      = document.createElement('div');
+    const meta        = document.createElement('div');
+    const ano         = document.createElement('span');
+    const badge       = document.createElement('div');
+    const estrela     = document.createElement('span');
+    const nota        = document.createElement('span');
     const cardOverlay = document.createElement('div');
 
     grid.appendChild(card);
@@ -107,12 +157,12 @@ function criarHtmlFilme(filme, indice) {
         poster.insertBefore(fallback, badge);
     }
 
-    estrela.textContent       = '★';
-    nota.textContent          = filme.vote_average ? filme.vote_average.toFixed(1) : '—';
-    cardOverlay.textContent   = '▶';
-    titulo.textContent        = filme.title;
-    ano.className             = 'card-year';
-    ano.textContent           = filme.release_date?.slice(0, 4) ?? '—';
+    estrela.textContent     = '★';
+    nota.textContent        = filme.vote_average ? filme.vote_average.toFixed(1) : '—';
+    cardOverlay.textContent = '▶';
+    titulo.textContent      = filme.title;
+    ano.className           = 'card-year';
+    ano.textContent         = filme.release_date?.slice(0, 4) ?? '—';
 
     card.addEventListener('click', () => {
         if (!currentUser) {
@@ -135,7 +185,6 @@ async function mostrarOverlay(filme) {
     overlay.querySelector('.overlay-nota').textContent    = `★ ${filme.vote_average?.toFixed(1) ?? '—'}`;
     overlay.querySelector('.overlay-sinopse').textContent = filme.overview || 'Sem sinopse disponível.';
 
-    // Verificar se já está nos favoritos
     const favBtn = document.getElementById('overlay-fav-btn');
     favBtn.disabled = true;
     try {
@@ -172,13 +221,19 @@ async function toggleFavorito() {
     if (snap.exists()) {
         await deleteDoc(ref);
         atualizarBotaoFav(favBtn, false);
+        // Se estiver na aba favoritos, fechar e atualizar a lista
+        if (abaAtiva === 'favoritos') {
+            fecharOverlay();
+            mostrarFavoritos();
+        }
     } else {
         await setDoc(ref, {
             id:           currentFilme.id,
             title:        currentFilme.title,
             poster_path:  currentFilme.poster_path  ?? null,
             release_date: currentFilme.release_date ?? null,
-            vote_average: currentFilme.vote_average ?? null
+            vote_average: currentFilme.vote_average ?? null,
+            overview:     currentFilme.overview     ?? null
         });
         atualizarBotaoFav(favBtn, true);
     }
