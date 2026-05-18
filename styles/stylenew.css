@@ -238,12 +238,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.38s ease;
+  transition: transform 0.38s ease, filter 0.38s ease;
 }
 
 .movie-card:hover .card-poster img {
   transform: scale(1.07);
+  filter: brightness(1.08) saturate(1.18);
 }
+
+.card-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(201,168,76,0.28);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.movie-card:hover .card-poster::after { opacity: 1; }
 
 .card-poster-bg {
   width: 100%;
@@ -312,6 +326,53 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .movie-card:hover .card-poster-overlay { opacity: 1; }
+
+.card-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.15s, border-color 0.15s, background 0.15s;
+  backdrop-filter: blur(6px);
+  z-index: 10;
+  cursor: pointer;
+}
+
+.movie-card:hover .card-fav-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card-fav-btn:hover {
+  color: var(--red) !important;
+  border-color: var(--red) !important;
+  background: rgba(192,57,43,0.18) !important;
+}
+
+.card-fav-btn.ativo {
+  color: var(--red);
+  border-color: var(--red) !important;
+  background: rgba(192,57,43,0.22);
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card-fav-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed;
+}
 
 .card-body {
   padding: 10px 12px 13px;

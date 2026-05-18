@@ -119,6 +119,7 @@ function criarHtmlFilme(filme, indice) {
     const estrela     = document.createElement('span');
     const nota        = document.createElement('span');
     const cardOverlay = document.createElement('div');
+    const quickFavBtn = document.createElement('button');
 
     grid.appendChild(card);
     card.appendChild(poster);
@@ -130,6 +131,7 @@ function criarHtmlFilme(filme, indice) {
     badge.appendChild(estrela);
     badge.appendChild(nota);
     poster.appendChild(cardOverlay);
+    poster.appendChild(quickFavBtn);
 
     card.className        = 'movie-card';
     poster.className      = 'card-poster';
@@ -140,8 +142,41 @@ function criarHtmlFilme(filme, indice) {
     estrela.className     = 'badge-star';
     nota.className        = 'badge-score';
     cardOverlay.className = 'card-poster-overlay';
+    quickFavBtn.className = 'card-fav-btn';
+    quickFavBtn.title     = 'Adicionar aos favoritos';
+    quickFavBtn.innerHTML = '♡';
 
     card.style.animationDelay = `${indice * 35}ms`;
+
+    if (currentUser) {
+        getDoc(doc(db, 'users', currentUser.uid, 'favoritos', String(filme.id)))
+            .then(snap => atualizarQuickFavBtn(quickFavBtn, snap.exists()))
+            .catch(() => {});
+    }
+
+    quickFavBtn.addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!currentUser) return;
+        quickFavBtn.disabled = true;
+        const ref  = doc(db, 'users', currentUser.uid, 'favoritos', String(filme.id));
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+            await deleteDoc(ref);
+            atualizarQuickFavBtn(quickFavBtn, false);
+            if (abaAtiva === 'favoritos') mostrarFavoritos();
+        } else {
+            await setDoc(ref, {
+                id:           filme.id,
+                title:        filme.title,
+                poster_path:  filme.poster_path  ?? null,
+                release_date: filme.release_date ?? null,
+                vote_average: filme.vote_average ?? null,
+                overview:     filme.overview     ?? null
+            });
+            atualizarQuickFavBtn(quickFavBtn, true);
+        }
+        quickFavBtn.disabled = false;
+    });
 
     if (filme.poster_path) {
         const img   = document.createElement('img');
@@ -210,6 +245,11 @@ function atualizarBotaoFav(btn, ativo) {
         btn.classList.remove('ativo');
         btn.textContent = '♡ Favorito';
     }
+}
+
+function atualizarQuickFavBtn(btn, ativo) {
+    btn.innerHTML = ativo ? '♥' : '♡';
+    btn.classList.toggle('ativo', ativo);
 }
 
 async function toggleFavorito() {
