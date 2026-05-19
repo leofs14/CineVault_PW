@@ -25,6 +25,39 @@ let currentFilme  = null;
 let abaAtiva      = 'populares';
 let searchDebounce = null;
 
+let currentTrailerKey = null;
+let ytPlayer = null;
+let ytApiReady = false;
+let ytApiLoading = false;
+let ytApiCallbacks = [];
+
+function loadYouTubeAPI() {
+    return new Promise(resolve => {
+        if (ytApiReady) { resolve(); return; }
+        ytApiCallbacks.push(resolve);
+        if (ytApiLoading) return;
+        ytApiLoading = true;
+        window.onYouTubeIframeAPIReady = () => {
+            ytApiReady = true;
+            ytApiCallbacks.forEach(cb => cb());
+            ytApiCallbacks = [];
+        };
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+    });
+}
+
+function destroyTrailerPlayer() {
+    if (ytPlayer) {
+        ytPlayer.destroy();
+        ytPlayer = null;
+    }
+    const wrap = document.getElementById('overlay-player-wrap');
+    wrap.style.display = 'none';
+    wrap.querySelector('.overlay-player-inner').innerHTML = '<div id="overlay-player"></div>';
+}
+
 // ── Auth guard ──────────────────────────────────────────
 onAuthStateChanged(auth, user => {
     if (!user) {
@@ -274,7 +307,12 @@ function criarHtmlFilme(filme, indice) {
 // ── Overlay ─────────────────────────────────────────────
 async function mostrarOverlay(filme) {
     currentFilme = filme;
+    currentTrailerKey = null;
     const overlay = document.querySelector('#overlay');
+
+    destroyTrailerPlayer();
+    const trailerBtn = document.getElementById('overlay-trailer-btn');
+    trailerBtn.classList.add('hidden');
 
     overlay.querySelector('.overlay-poster').src      = filme.poster_path ? `${IMG_BASE}${filme.poster_path}` : '';
     overlay.querySelector('.overlay-poster').alt      = filme.title;
@@ -293,11 +331,24 @@ async function mostrarOverlay(filme) {
     }
     favBtn.disabled = false;
 
+    // fetch trailer asynchronously — show button if one is found
+    fetch(`${BASE_URL}/movie/${filme.id}/videos?api_key=${API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+            const trailer = (data.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube');
+            if (trailer && currentFilme && currentFilme.id === filme.id) {
+                currentTrailerKey = trailer.key;
+                trailerBtn.classList.remove('hidden');
+            }
+        })
+        .catch(() => {});
+
     overlay.classList.add('visivel');
 }
 
 function fecharOverlay() {
     document.querySelector('#overlay').classList.remove('visivel');
+    destroyTrailerPlayer();
 }
 
 function atualizarBotaoFav(btn, ativo) {
@@ -347,6 +398,18 @@ document.querySelector('#overlay').addEventListener('click', fecharOverlay);
 document.querySelector('#overlay .overlay-caixa').addEventListener('click', e => e.stopPropagation());
 document.querySelector('#overlay .overlay-fechar').addEventListener('click', fecharOverlay);
 document.getElementById('overlay-fav-btn').addEventListener('click', toggleFavorito);
+
+document.getElementById('overlay-trailer-btn').addEventListener('click', async () => {
+    if (!currentTrailerKey || ytPlayer) return;
+    const btn = document.getElementById('overlay-trailer-btn');
+    btn.classList.add('hidden');
+    document.getElementById('overlay-player-wrap').style.display = 'block';
+    await loadYouTubeAPI();
+    ytPlayer = new YT.Player('overlay-player', {
+        videoId: currentTrailerKey,
+        playerVars: { autoplay: 1, rel: 0 }
+    });
+});
 
 // ── Error state ─────────────────────────────────────────
 function criarHtmlErro(mensagem) {

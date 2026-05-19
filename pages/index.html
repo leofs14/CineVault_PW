@@ -43,15 +43,23 @@
   <div id="overlay">
     <div class="overlay-caixa">
       <button class="overlay-fechar">✕</button>
-      <div class="overlay-esquerda">
-        <img class="overlay-poster" src="" alt="">
-        <button class="overlay-fav" id="overlay-fav-btn">♡ Favorito</button>
+      <div class="overlay-top-row">
+        <div class="overlay-esquerda">
+          <img class="overlay-poster" src="" alt="">
+          <button class="overlay-fav" id="overlay-fav-btn">♡ Favorito</button>
+          <button class="overlay-trailer-btn hidden" id="overlay-trailer-btn">▶ Ver Trailer</button>
+        </div>
+        <div class="overlay-info">
+          <h2 class="overlay-titulo"></h2>
+          <p class="overlay-ano"></p>
+          <p class="overlay-nota"></p>
+          <p class="overlay-sinopse"></p>
+        </div>
       </div>
-      <div class="overlay-info">
-        <h2 class="overlay-titulo"></h2>
-        <p class="overlay-ano"></p>
-        <p class="overlay-nota"></p>
-        <p class="overlay-sinopse"></p>
+      <div id="overlay-player-wrap" style="display:none;">
+        <div class="overlay-player-inner">
+          <div id="overlay-player"></div>
+        </div>
       </div>
     </div>
   </div>
