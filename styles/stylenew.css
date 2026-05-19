@@ -166,6 +166,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 
 .nav-user-email {
