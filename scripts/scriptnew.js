@@ -20,9 +20,10 @@ const API_KEY  = "56c0750b96b29e50462add6f1590b200";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/w342";
 
-let currentUser  = null;
-let currentFilme = null;
-let abaAtiva     = 'populares';
+let currentUser   = null;
+let currentFilme  = null;
+let abaAtiva      = 'populares';
+let searchDebounce = null;
 
 // ── Auth guard ──────────────────────────────────────────
 onAuthStateChanged(auth, user => {
@@ -39,7 +40,11 @@ window.doLogout = () => signOut(auth);
 
 // ── Tab switching ───────────────────────────────────────
 document.getElementById('tab-populares').addEventListener('click', () => {
-    if (abaAtiva === 'populares') return;
+    const hasSearch = searchInput.value.trim().length > 0;
+    if (abaAtiva === 'populares' && !hasSearch) return;
+    searchInput.value = '';
+    searchClear.classList.add('hidden');
+    clearTimeout(searchDebounce);
     abaAtiva = 'populares';
     document.getElementById('tab-populares').classList.add('active');
     document.getElementById('tab-favoritos').classList.remove('active');
@@ -49,11 +54,44 @@ document.getElementById('tab-populares').addEventListener('click', () => {
 
 document.getElementById('tab-favoritos').addEventListener('click', () => {
     if (abaAtiva === 'favoritos') return;
+    searchInput.value = '';
+    searchClear.classList.add('hidden');
+    clearTimeout(searchDebounce);
     abaAtiva = 'favoritos';
     document.getElementById('tab-favoritos').classList.add('active');
     document.getElementById('tab-populares').classList.remove('active');
     document.getElementById('section-title').textContent = 'Os Meus Favoritos';
     mostrarFavoritos();
+});
+
+// ── Search ──────────────────────────────────────────────
+const searchInput = document.getElementById('search-input');
+const searchClear = document.getElementById('search-clear');
+
+searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    searchClear.classList.toggle('hidden', !q);
+    clearTimeout(searchDebounce);
+    if (!q) {
+        document.getElementById('section-title').textContent =
+            abaAtiva === 'favoritos' ? 'Os Meus Favoritos' : 'Filmes Populares';
+        abaAtiva === 'favoritos' ? mostrarFavoritos() : mostrarPopulares();
+        return;
+    }
+    searchDebounce = setTimeout(() => pesquisarFilmes(q), 350);
+});
+
+searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        searchInput.blur();
+    }
+});
+
+searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input'));
 });
 
 // ── Views ───────────────────────────────────────────────
@@ -96,6 +134,31 @@ async function obterFilmesPopulares() {
     const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-PT&page=1`);
     if (!res.ok) throw new Error(`Erro ${res.status}`);
     return (await res.json()).results;
+}
+
+async function pesquisarFilmes(query) {
+    const app = document.querySelector('#app');
+    app.innerHTML = '';
+    document.getElementById('section-title').textContent = `Resultados para "${query}"`;
+    document.getElementById('count').textContent = '';
+    try {
+        const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=pt-PT&query=${encodeURIComponent(query)}&page=1`);
+        if (!res.ok) throw new Error(`Erro ${res.status}`);
+        const data = await res.json();
+        document.getElementById('count').textContent = `${data.results.length} filmes`;
+        if (data.results.length === 0) {
+            app.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">&#x2205;</div>
+                    <div class="empty-title">Sem resultados</div>
+                    <div class="empty-sub">Não encontrámos filmes para "${query}".</div>
+                </div>`;
+            return;
+        }
+        data.results.forEach((filme, i) => criarHtmlFilme(filme, i));
+    } catch (err) {
+        criarHtmlErro(err.message);
+    }
 }
 
 // ── Movie cards ─────────────────────────────────────────

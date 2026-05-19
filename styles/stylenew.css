@@ -124,6 +124,43 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .nav-spacer { flex: 1; }
 
+/* ── Search bar ── */
+.search-wrap {
+  flex: 1;
+  max-width: 340px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 30px 7px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input::placeholder { color: var(--faint); }
+
+.search-input:focus { border-color: var(--border-h); }
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.search-clear:hover { color: var(--text); }
+
 /* ── Nav user area (só no index) ── */
 .nav-user {
   display: flex;
