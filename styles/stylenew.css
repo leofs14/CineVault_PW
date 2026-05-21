@@ -606,6 +606,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .overlay-titulo {
@@ -631,6 +632,86 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 13px;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.overlay-elenco {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.overlay-elenco:empty { display: none; }
+
+.overlay-elenco-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+
+.overlay-elenco-lista {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.overlay-elenco-lista::-webkit-scrollbar { height: 4px; }
+.overlay-elenco-lista::-webkit-scrollbar-track { background: transparent; }
+.overlay-elenco-lista::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.elenco-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 60px;
+}
+
+.elenco-foto-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--raised);
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.elenco-foto-wrap.sem-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.elenco-foto-wrap.sem-foto::after {
+  content: '?';
+  font-size: 20px;
+  color: var(--border);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.elenco-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.elenco-nome {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+  width: 60px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .overlay-fechar {

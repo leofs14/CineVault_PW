@@ -320,6 +320,7 @@ async function mostrarOverlay(filme) {
     overlay.querySelector('.overlay-ano').textContent     = filme.release_date?.slice(0, 4) ?? '—';
     overlay.querySelector('.overlay-nota').textContent    = `★ ${filme.vote_average?.toFixed(1) ?? '—'}`;
     overlay.querySelector('.overlay-sinopse').textContent = filme.overview || 'Sem sinopse disponível.';
+    document.getElementById('overlay-elenco').innerHTML = '';
 
     const favBtn = document.getElementById('overlay-fav-btn');
     favBtn.disabled = true;
@@ -340,6 +341,27 @@ async function mostrarOverlay(filme) {
                 currentTrailerKey = trailer.key;
                 trailerBtn.classList.remove('hidden');
             }
+        })
+        .catch(() => {});
+
+    // fetch cast
+    fetch(`${BASE_URL}/movie/${filme.id}/credits?api_key=${API_KEY}&language=pt-PT`)
+        .then(r => r.json())
+        .then(data => {
+            if (!currentFilme || currentFilme.id !== filme.id) return;
+            const cast = (data.cast || []).slice(0, 10);
+            if (!cast.length) return;
+            const elencoEl = document.getElementById('overlay-elenco');
+            const items = cast.map(a => {
+                const foto = a.profile_path
+                    ? `<img class="elenco-foto" src="https://image.tmdb.org/t/p/w185${a.profile_path}" alt="${a.name.replace(/"/g, '&quot;')}">`
+                    : '';
+                return `<div class="elenco-item">
+                    <div class="elenco-foto-wrap${a.profile_path ? '' : ' sem-foto'}">${foto}</div>
+                    <span class="elenco-nome">${a.name}</span>
+                </div>`;
+            }).join('');
+            elencoEl.innerHTML = `<p class="overlay-elenco-label">Elenco</p><div class="overlay-elenco-lista">${items}</div>`;
         })
         .catch(() => {});
 
